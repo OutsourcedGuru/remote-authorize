@@ -7,7 +7,7 @@ In the world of accounting there's a concept of "Best Practices" with respect to
 
 ### Today's Accounting
 
-Fast-forward to today's state-of-the-art technology and we have a number of advancements:  cellphones, online bill pay, two-factor authentication, public-key cryptography and virtual signatures.  And yet, there doesn't appear to be a solution so that the Accounts Payable clerk may submit an online Bill Pay check, easily notify the signator(s) who may then go online and authorize that check.  In this scenario with both QuickBooks as the accounting system and Wells Fargo as the custodial bank, this would require a signator to possess the online credentials to the checking account.  And yet, in the realm of accounting controls, this is a bad idea.  You just need a signator (a Vice President of the company, for example) to sign the check and nothing more.
+Fast-forward to today's state-of-the-art technology and we have a number of advancements:  cellphones, online bill pay, two-factor authentication, public-key cryptography and virtual signatures.  And yet, there doesn't appear to be a solution so that the Accounts Payable clerk may submit an online Bill Pay check, easily notify the signator(s) who may then go online and authorize that check.  In this scenario with both QuickBooks as the accounting system and Wells Fargo as the custodial bank, this would require a signator to possess the online credentials to the checking account.  In the realm of accounting controls, this is a bad idea.  You just need a signator (a Vice President of the company, for example) to sign the check and nothing more.
 
 ### Background
 
@@ -52,11 +52,11 @@ In the absence of this piece a work-around may be initially used instead: The se
 
 This will be a Node.js REST-based website.  It will host the audit log, the signator authorization table, the queue of checks to be signed.  Additionally, it will be the endpoints for both the QB and PhoneGap app communication and will be responsible for communicating to the online banking site to authorize each check in question.  This will be the only piece which knows the online banking account's credentials.
 
-There doesn't appear to be an easy method of **not** using a server since it requires an audit log minimally to be trusted.  There could be some means of removing this piece but I wouldn't advise it.
+There doesn't appear to be an easy method of **not** using a server since it requires an audit log minimally for the solution to be trusted.  There could be some means of removing this piece but I wouldn't advise it.
 
 #### 3. Client application for the signators
 
-This will be an Adobe PhoneGap app which is represented by this Github repository.  Each signator will have this installed on their phone and an initialization step will register their phone's UUID for half of the two-factor authentication requirement as well as create a new PIN number to be used for the second half.
+This will be an Adobe PhoneGap app and is the piece which is represented by this Github repository.  Each signator will have this installed on their phone and an initialization step will register their phone's UUID for half of the two-factor authentication requirement as well as create a new PIN number to be used for the second half.
 
 The client application will have no knowledge of the online banking account's credentials nor will this appear in any form of server/client communication.
 
