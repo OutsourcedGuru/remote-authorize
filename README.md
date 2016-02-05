@@ -1,6 +1,8 @@
 # remote-authorize
 An Adobe PhoneGap app with two-factor authorization of checks for QuickBooks Bill Pay
 
+![PhoneGap Client screenshot](https://cloud.githubusercontent.com/assets/15971213/12862093/277c63c8-cc1d-11e5-8f4a-688328e04724.png)
+
 ### Accounting Controls
 
 In the world of accounting there's a concept of "Best Practices" with respect to the separation of duties.  Specifically, a critical practice is the separation of these *particular two activities*:  1) creating a check and 2) signing that check.  This control helps to minimize theft and is seen as the cornerstone of controlling assets.  These types of controls have been in place for some time now (think: a century or more).
