@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="msapplication-tap-highlight" content="no" />
+<!-- WARNING: for iOS 7, remove the width=device-width and height=device-height attributes. See https://issues.apache.org/jira/browse/CB-4323 -->
+<meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=medium-dpi" />
+<title>Remote Authorize</title>
+<script type="text/javascript"  src="js/platform-test.js"           ></script>
+<script type="text/javascript"  src="js/jquery-1.11.3.min.js"       ></script>
+<script type="text/javascript"  src="js/jquery.mobile-1.4.5.min.js" ></script>
+<link   type="text/css"         href="css/jquery.mobile-1.4.5.css"  rel="stylesheet" />
+<script type="text/javascript"  src="cordova.js"                    ></script>
+<script type="text/javascript"  src="js/index.js"                   ></script>
+<script type="text/javascript"  src="js/config.js"                  ></script>
+<link   type="text/css"         href="css/my.css"                   rel="stylesheet" />
+<script>
+    var isDebug = true;
+</script>
+</head>
+<body>
+<div data-role="page" id="home">
+    <div data-role="header"><h1>Remote Authorize</h1></div>
+    <div role="main" class="ui-content">
+        <p>This app uses two-factor authentication so that you may remotely authorize checks as submitted from Accounts Payable.</p>
+        <p id="homeUserParagraph">Please select a request on the next page.</p>
+        <p id="homeStatusParagraph"></p>
+    </div>
+    <!-- The following is a pair of footers.  The first indicates a waiting status.
+         Upon success with getJSON() in the JavaScript below the visibility of the
+         two footers changes, allowing forward-progress navigation. -->
+    <div id="homeNavWaiting" data-role="footer" style="visibility: show;" data-position="fixed" style="position:absolute"><h1>Waiting for server...</h1></div>
+    <div id="homeNavRequests" data-role="footer" style="visibility: hidden;" data-position="fixed" style="position:absolute"><h1>&nbsp;</h1><a data-transition="slide" class="ui-btn ui-corner-all ui-btn-inline ui-mini footer-button-right ui-btn-icon-right ui-icon-carat-r" href="#requests">Next</a></div>
+</div>
+
+<!-- This is the landing page for the invalid PIN submitted. -->
+<div data-role="page" id="invalid_pin">
+    <div data-role="header"><h1>Invalid PIN submitted</h1></div>
+    <div role="main" id="content" class="ui-content">
+        <p>Status: Two-factor authentication failed (your PIN does not match that in our database)</p>
+    </div>
+    <div data-role="footer" data-position="fixed" style="position:absolute"><h1>&nbsp;</h1><a data-transition="slide" data-direction="reverse" class="ui-btn ui-corner-all ui-btn-inline ui-mini footer-button-left ui-btn-icon-left ui-icon-carat-l" href="#home">Back</a></div>
+</div>
+
+<!-- This is the landing page for a successful authorization. -->
+<div data-role="page" id="success">
+    <div data-role="header"><h1>Successfully Authorized</h1></div>
+    <div role="main" id="content" class="ui-content">
+        <p>Status: Two-factor authentication succeeded (your PIN matches that in our database)</p>
+    </div>
+    <div data-role="footer" data-position="fixed" style="position:absolute"><h1>&nbsp;</h1><a data-transition="slide" data-direction="reverse" class="ui-btn ui-corner-all ui-btn-inline ui-mini footer-button-left ui-btn-icon-left ui-icon-carat-l" href="#home">Back</a></div>
+</div>
+
+<!-- This is the landing page for the Requests lookup.  It will be appended to within the
+     JavaScript code below upon success of getJSON(). -->
+<div data-role="page" id="requests">
+    <div data-role="header"><h1>Requests</h1></div>
+    <div role="main" id="content" class="ui-content">
+        <p>Status: First-factor approval achieved (your phone's ID matches that in our database)</p>
+        <ul data-role="listview" id="list" data-inset="true" data-filter="true" data-filter-placeholder="Search results..." data-divider-theme="a"></ul></div>
+    <div data-role="footer" data-position="fixed" style="position:absolute"><h1>&nbsp;</h1><a data-transition="slide" data-direction="reverse" class="ui-btn ui-corner-all ui-btn-inline ui-mini footer-button-left ui-btn-icon-left ui-icon-carat-l" href="#home">Back</a></div>
+</div>
+
+<script type="text/javascript">
+app.initialize();
+
+$(document).ready(function(){});
+
+// These functions will show/hide a div tag, for example, or provide a safe navigation
+// within PhoneGap/jQuery's environment.
+function Show(jqueryObj) {  jqueryObj.attr('style','visibility: show');     }
+function Hide(jqueryObj) {  jqueryObj.attr('style','visibility: hidden');   }
+function Redirect(strURL, nMilliseconds) {
+    if (nMilliseconds == null) {
+        $.mobile.navigate(strURL);
+    } else {
+        setTimeout(function() {
+            $.mobile.navigate(strURL);
+            return false;
+            }, nMilliseconds);
+    }
+}
+
+function onDeviceReady() {
+    var strUUID = '1';
+    if (isPhoneGap()) { strUUID = device.uuid };
+    var strURL = strServer + '/client/' + strUUID;
+    var strHTML = '';
+    $.getJSON(strURL, function(jsonData) {
+        // Do nothing at this level but wait for the response
+    }).done(function(jsonData) {
+        if (jsonData.status == 'uuid_found') {
+            $('#homeStatusParagraph').html('[Signators] lookup status: Success');
+            $('#list').append('<li role="list-divider">Active Requests</li>');
+        } else {
+            $('#homeStatusParagraph').html('[Signators] lookup status: Fail');
+            $('#list').append('<li role="list-divider">No Signator Found</li>');
+        }
+        // We now have what is likely a good-looking JSON response to parse
+        for (var i in jsonData.requests) {
+            // First create a series of landing pages, one per request.  The page name will
+            // be something like #c_1, for example.  The URL here will be list_1, for example.
+            strHTML =
+                '<div data-role="page" id="c_' + jsonData.requests[i].id + '">' +
+                '<div data-role="header"><h1>Check #' + jsonData.requests[i].check + ' for $' + jsonData.requests[i].amount + '</h1></div>' +
+                '<div role="main" id="content" class="ui-content">' +
+                '<form action="' + strServer + '/client/' + strUUID + '" method="post">' +
+                '<h2>Please approve:</h2>' +
+                '<input name="client" type="hidden" value="' + strClient + '">' +
+                '<input name="signatorFullName" type="hidden" value="' + jsonData.signator.fullName + '">' +
+                '<input name="request_id" type="hidden" value="' + jsonData.requests[i].id + '">' +
+                '<input name="check" type="hidden" value="' + jsonData.requests[i].check + '">' +
+                '<label for="pin">PIN (four digits)</label>' +
+                '<input name="pin" type="password" size="4" maxlength="4">' +
+                '<input type="submit" value="Approve"><p/><p/><hr/>' +
+                '<label for="date">Check Date</label>' +
+                '<input name="date" readonly type="date" id="date" value="' + jsonData.requests[i].date + '" style="background:#f0f0f0;">' +
+                '<label for="payee">Payee</label>' +
+                '<input name="payee" readonly type="text" id="payee" value="' + jsonData.requests[i].payee + '" style="background:#f0f0f0;">' +
+                '<label for="amount">Check Amount</label>' +
+                '<input name="amount" readonly type="text" id="amount" value="' + jsonData.requests[i].amount + '" style="background:#f0f0f0;">' +
+                '<label for="memo">Memo</label>' +
+                '<input name="memo" readonly type="text" id="memo" value="' + jsonData.requests[i].memo + '" style="background:#f0f0f0;">' +
+                '</form>' +
+                '</div>' +
+                '<div data-role="footer" data-position="fixed" style="position:absolute"><h1>&nbsp;</h1><a data-transition="slide" data-direction="reverse" class="ui-btn ui-corner-all ui-btn-inline ui-mini footer-button-left ui-btn-icon-left ui-icon-carat-l" href="javascript:window.history.back();">Back</a>' +
+                '</div>' +
+                '</div>';
+            $('body').append(strHTML);
+            
+            // ...then the button link for the #requests page itself
+            $('#list').append('<li><a data-transition="slide" href="#c_' + jsonData.requests[i].id + '">' + jsonData.requests[i].date + ' &bull; $' + jsonData.requests[i].amount + ' -> ' + jsonData.requests[i].payee + '</a></li>');
+        }
+        // End of JSON parsing
+        Hide($('#homeNavWaiting'));  Show($('#homeNavRequests'));
+        Redirect('#requests', 3000);
+    }).fail(function(XMLHttpRequest, textStatus, e) {
+        // Do nothing on fail()
+        $('#homeStatusParagraph').html('Lookup failed, status=[' + textStatus + '], error=[' + e + ']');
+    }).always(function(jsonData) {
+        // Do nothing here
+    });
+}             // End of function onDeviceReady()
+
+document.addEventListener("deviceready", onDeviceReady, false);
+
+// This part will detect if you're on a PC (non-mobile device) and fire off the function
+// so that you can test this from Safari or Internet Explorer on a desktop computer.
+if (isDebug && !isPhoneGap()) {
+    onDeviceReady();
+}
+
+</script>
+</body>
+</html>

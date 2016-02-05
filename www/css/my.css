@@ -1,0 +1,4 @@
+.footer-button-left, .footer-button-right { position: absolute; width: 60px; margin: 0; top: 0.12em; bottom: 0.12em; }
+.footer-button-wide { width: 80px; }
+.footer-button-left  { left:  0.4em; } .footer-button-right { right: 0.4em; }
+.ui-header .ui-title { margin-right: 10%; margin-left: 10%; }
