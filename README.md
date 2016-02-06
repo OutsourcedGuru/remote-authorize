@@ -63,3 +63,29 @@ This will be an Adobe PhoneGap app and is the piece which is represented by this
 The client application will have no knowledge of the online banking account's credentials nor will this appear in any form of server/client communication.
 
 There doesn't appear to be an easy method of **not** using a phone app since we're trying to allow the signators the ability to 1) be away from the office and 2) be away from a computer.
+
+### Installing
+
+I assume that you have Node.js and PhoneGap loaded already on your workstation and that you're familiar with it.  Also, it would be good to have the PhoneGap Developer app for local testing and development. I'd suggest starting by installing the server-side of this code from the related repository.  Then when you're ready for the client part, do another git clone of this repository.
+
+    git clone https://github.com/OutsourcedGuru/remote-authorize.git
+
+Next, change into the directory created.
+
+    cd remote-authorize
+
+You should edit the config file to identify where your server and client are located and what ports they use.
+
+    vi www/js/config.js
+
+In development, the server is on port 3001 and the client is on 3000.
+
+I assume that you've installed the server already.  Here's the general ordering of events after you've cloned both repositories and edited the appropriate settings.
+
+1. Start the mongo database daemon
+2. Optionally, start a Mongo shell session to see what's happening in the database
+3. In another Terminal session, start the server with either `npm start` or for more information in the log, `set DEBUG=remote-authorize-server:* & npm start`.
+4. Using your browser, visit `http://localhost:3001` to log into the server as an Accounts Payable clerk and to create a check-signing request
+5. Using your browser, visit `http://localhost:3000` to see what the smartphone screen looks like for a signator (someone authorized to sign checks)
+6. Optionally, use the PhoneGap app on your smartphone.  In this case you'll want to change the `strServer` address in `www/js/config.js` in the client code to the IP address of your server.  Have the PhoneGap app go to this address on port 3000. Review the server log in the Terminal session to see what `uuid` is in use for this signator and add a document in your signators collection.  See the server code's README for details.
+
