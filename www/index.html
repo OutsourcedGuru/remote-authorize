@@ -23,7 +23,7 @@
 <div data-role="page" id="home">
     <div data-role="header"><h1>Remote Authorize</h1></div>
     <div role="main" class="ui-content">
-        <p>This app uses two-factor authentication so that you may remotely authorize checks as submitted from Accounts Payable.</p>
+        <p>This app uses two-factor authentication so that you may remotely authorize checks as submitted by Accounts Payable.</p>
         <p id="homeUserParagraph">Please select a request on the next page.</p>
         <p id="homeStatusParagraph"></p>
     </div>
@@ -32,6 +32,7 @@
          two footers changes, allowing forward-progress navigation. -->
     <div id="homeNavWaiting" data-role="footer" style="visibility: show;" data-position="fixed" style="position:absolute"><h1>Waiting for server...</h1></div>
     <div id="homeNavRequests" data-role="footer" style="visibility: hidden;" data-position="fixed" style="position:absolute"><h1>&nbsp;</h1><a data-transition="slide" class="ui-btn ui-corner-all ui-btn-inline ui-mini footer-button-right ui-btn-icon-right ui-icon-carat-r" href="#requests">Next</a></div>
+    <div id="homeNavUnauthorized" data-role="footer" style="visibility: hidden;" data-position="fixed" style="position:absolute"><h1>&nbsp;</h1><a data-transition="slide" class="ui-btn ui-corner-all ui-btn-inline ui-mini footer-button-right ui-btn-icon-right ui-icon-carat-r" href="#unauthorized_uuid">Next</a></div>
 </div>
 
 <!-- This is the landing page for the invalid PIN submitted. -->
@@ -40,6 +41,22 @@
     <div role="main" id="content" class="ui-content">
         <p>Status: Two-factor authentication failed (your PIN does not match that in our database)</p>
     </div>
+    <div data-role="footer" data-position="fixed" style="position:absolute"><h1>&nbsp;</h1><a data-transition="slide" data-direction="reverse" class="ui-btn ui-corner-all ui-btn-inline ui-mini footer-button-left ui-btn-icon-left ui-icon-carat-l" href="#home">Back</a></div>
+</div>
+
+<!-- This is the landing page for the invalid validation code submitted. -->
+<div data-role="page" id="auth_fail">
+    <div data-role="header"><h1>Invalid validation code submitted</h1></div>
+    <div role="main" id="content" class="ui-content">
+        <p>Status: Signator authentication failed (validation code entered does not match that in our database)</p>
+    </div>
+    <div data-role="footer" data-position="fixed" style="position:absolute"><h1>&nbsp;</h1><a data-transition="slide" data-direction="reverse" class="ui-btn ui-corner-all ui-btn-inline ui-mini footer-button-left ui-btn-icon-left ui-icon-carat-l" href="#home">Back</a></div>
+</div>
+
+<!-- This is the landing page for the unseen UUID. -->
+<div data-role="page" id="unauthorized_uuid">
+    <div data-role="header"><h1>Unknown Phone In Use</h1></div>
+    <div role="main" id="contentUnauthorized" class="ui-content"></div>
     <div data-role="footer" data-position="fixed" style="position:absolute"><h1>&nbsp;</h1><a data-transition="slide" data-direction="reverse" class="ui-btn ui-corner-all ui-btn-inline ui-mini footer-button-left ui-btn-icon-left ui-icon-carat-l" href="#home">Back</a></div>
 </div>
 
@@ -93,48 +110,70 @@ function onDeviceReady() {
         if (jsonData.status == 'uuid_found') {
             $('#homeStatusParagraph').html('[Signators] lookup status: Success');
             $('#list').append('<li role="list-divider">Active Requests</li>');
+            // We now have what is likely a good-looking JSON response to parse
+            for (var i in jsonData.requests) {
+                // First create a series of landing pages, one per request.  The page name will
+                // be something like #c_1, for example.  The URL here will be list_1, for example.
+                strHTML =
+                    '<div data-role="page" id="c_' + jsonData.requests[i].id + '">' +
+                    '<div data-role="header"><h1>Check #' + jsonData.requests[i].check + ' for $' + jsonData.requests[i].amount + '</h1></div>' +
+                    '<div role="main" id="content" class="ui-content">' +
+                    '<form action="' + strServer + '/client/' + strUUID + '" method="post">' +
+                    '<h2>Please approve:</h2>' +
+                    '<input name="client" type="hidden" value="' + strClient + '">' +
+                    '<input name="signatorFullName" type="hidden" value="' + jsonData.signator.fullName + '">' +
+                    '<input name="request_id" type="hidden" value="' + jsonData.requests[i].id + '">' +
+                    '<input name="check" type="hidden" value="' + jsonData.requests[i].check + '">' +
+                    '<label for="pin">PIN (four digits)</label>' +
+                    '<input name="pin" type="password" size="4" maxlength="4">' +
+                    '<input type="submit" value="Approve"><p/><p/><hr/>' +
+                    '<label for="date">Check Date</label>' +
+                    '<input name="date" readonly type="date" id="date" value="' + jsonData.requests[i].date + '" style="background:#f0f0f0;">' +
+                    '<label for="payee">Payee</label>' +
+                    '<input name="payee" readonly type="text" id="payee" value="' + jsonData.requests[i].payee + '" style="background:#f0f0f0;">' +
+                    '<label for="amount">Check Amount</label>' +
+                    '<input name="amount" readonly type="text" id="amount" value="' + jsonData.requests[i].amount + '" style="background:#f0f0f0;">' +
+                    '<label for="memo">Memo</label>' +
+                    '<input name="memo" readonly type="text" id="memo" value="' + jsonData.requests[i].memo + '" style="background:#f0f0f0;">' +
+                    '</form>' +
+                    '</div>' +
+                    '<div data-role="footer" data-position="fixed" style="position:absolute"><h1>&nbsp;</h1><a data-transition="slide" data-direction="reverse" class="ui-btn ui-corner-all ui-btn-inline ui-mini footer-button-left ui-btn-icon-left ui-icon-carat-l" href="javascript:window.history.back();">Back</a>' +
+                    '</div>' +
+                    '</div>';
+                $('body').append(strHTML);
+                
+                // ...then the button link for the #requests page itself
+                $('#list').append('<li><a data-transition="slide" href="#c_' + jsonData.requests[i].id + '">' + jsonData.requests[i].date + ' &bull; $' + jsonData.requests[i].amount + ' -> ' + jsonData.requests[i].payee + '</a></li>');
+            } // for (var i in jsonData.requests)
+            // End of JSON parsing
+            Hide($('#homeNavWaiting'));  Show($('#homeNavRequests'));
+            Redirect('#requests', 3000);
         } else {
+            // if (jsonData.status == 'uuid_found')
             $('#homeStatusParagraph').html('[Signators] lookup status: Fail');
             $('#list').append('<li role="list-divider">No Signator Found</li>');
-        }
-        // We now have what is likely a good-looking JSON response to parse
-        for (var i in jsonData.requests) {
-            // First create a series of landing pages, one per request.  The page name will
-            // be something like #c_1, for example.  The URL here will be list_1, for example.
+            // Update the #unauthorized_uuid page with a form
             strHTML =
-                '<div data-role="page" id="c_' + jsonData.requests[i].id + '">' +
-                '<div data-role="header"><h1>Check #' + jsonData.requests[i].check + ' for $' + jsonData.requests[i].amount + '</h1></div>' +
-                '<div role="main" id="content" class="ui-content">' +
-                '<form action="' + strServer + '/client/' + strUUID + '" method="post">' +
-                '<h2>Please approve:</h2>' +
+                '<form action="' + strServer + '/client/signator/new/" method="post">' +
+                'Ask Accounts Payable to provide a validation code to use this system.<br/><br/>' +
                 '<input name="client" type="hidden" value="' + strClient + '">' +
-                '<input name="signatorFullName" type="hidden" value="' + jsonData.signator.fullName + '">' +
-                '<input name="request_id" type="hidden" value="' + jsonData.requests[i].id + '">' +
-                '<input name="check" type="hidden" value="' + jsonData.requests[i].check + '">' +
-                '<label for="pin">PIN (four digits)</label>' +
-                '<input name="pin" type="password" size="4" maxlength="4">' +
-                '<input type="submit" value="Approve"><p/><p/><hr/>' +
-                '<label for="date">Check Date</label>' +
-                '<input name="date" readonly type="date" id="date" value="' + jsonData.requests[i].date + '" style="background:#f0f0f0;">' +
-                '<label for="payee">Payee</label>' +
-                '<input name="payee" readonly type="text" id="payee" value="' + jsonData.requests[i].payee + '" style="background:#f0f0f0;">' +
-                '<label for="amount">Check Amount</label>' +
-                '<input name="amount" readonly type="text" id="amount" value="' + jsonData.requests[i].amount + '" style="background:#f0f0f0;">' +
-                '<label for="memo">Memo</label>' +
-                '<input name="memo" readonly type="text" id="memo" value="' + jsonData.requests[i].memo + '" style="background:#f0f0f0;">' +
-                '</form>' +
-                '</div>' +
-                '<div data-role="footer" data-position="fixed" style="position:absolute"><h1>&nbsp;</h1><a data-transition="slide" data-direction="reverse" class="ui-btn ui-corner-all ui-btn-inline ui-mini footer-button-left ui-btn-icon-left ui-icon-carat-l" href="javascript:window.history.back();">Back</a>' +
-                '</div>' +
-                '</div>';
-            $('body').append(strHTML);
-            
-            // ...then the button link for the #requests page itself
-            $('#list').append('<li><a data-transition="slide" href="#c_' + jsonData.requests[i].id + '">' + jsonData.requests[i].date + ' &bull; $' + jsonData.requests[i].amount + ' -> ' + jsonData.requests[i].payee + '</a></li>');
+                '<input name="auth_uuid" type="hidden" value="' + strUUID + '">' +
+                '<label for="fullName">Full Name</label>' +
+                '<input name="fullName" type="text" size="28" maxlength="30">' +
+                '<label for="cellPhone">Cellphone Number (123-456-7890)</label>' +
+                '<input name="cellPhone" type="tel" size="12" maxlength="12">' +
+                '<label for="email">Email</label>' +
+                '<input name="email" type="email" size="28" maxlength="40">' +
+                '<label for="code">Validation Code</label>' +
+                '<input name="code" type="text" size="6" maxlength="6">' +
+                '<input type="submit" value="Validate"><p/><p/><hr/>' +
+                '<label for="uuid">Phone ID</label>' +
+                '<input name="uuid" readonly type="text" id="uuid" value="' + strUUID + '" style="background:#f0f0f0;">' +
+                '</form>';
+            $('#contentUnauthorized').html(strHTML);
+            Hide($('#homeNavWaiting'));  $('#homeUserParagraph').html('UUID: ' + strUUID);  Show($('#homeNavUnauthorized'));
+            Redirect('#unauthorized_uuid');
         }
-        // End of JSON parsing
-        Hide($('#homeNavWaiting'));  Show($('#homeNavRequests'));
-        Redirect('#requests', 3000);
     }).fail(function(XMLHttpRequest, textStatus, e) {
         // Do nothing on fail()
         $('#homeStatusParagraph').html('Lookup failed, status=[' + textStatus + '], error=[' + e + ']');
