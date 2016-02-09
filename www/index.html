@@ -33,6 +33,7 @@
     <div id="homeNavWaiting" data-role="footer" style="visibility: show;" data-position="fixed" style="position:absolute"><h1>Waiting for server...</h1></div>
     <div id="homeNavRequests" data-role="footer" style="visibility: hidden;" data-position="fixed" style="position:absolute"><h1>&nbsp;</h1><a data-transition="slide" class="ui-btn ui-corner-all ui-btn-inline ui-mini footer-button-right ui-btn-icon-right ui-icon-carat-r" href="#requests">Next</a></div>
     <div id="homeNavUnauthorized" data-role="footer" style="visibility: hidden;" data-position="fixed" style="position:absolute"><h1>&nbsp;</h1><a data-transition="slide" class="ui-btn ui-corner-all ui-btn-inline ui-mini footer-button-right ui-btn-icon-right ui-icon-carat-r" href="#unauthorized_uuid">Next</a></div>
+    <div id="homeNavUnsupported" data-role="footer" style="visibility: hidden;" data-position="fixed" style="position:absolute"><h1>&nbsp;</h1><a data-transition="slide" class="ui-btn ui-corner-all ui-btn-inline ui-mini footer-button-right ui-btn-icon-right ui-icon-carat-r" href="#unsupported">Next</a></div>
 </div>
 
 <!-- This is the landing page for the invalid PIN submitted. -->
@@ -49,6 +50,15 @@
     <div data-role="header"><h1>Invalid validation code submitted</h1></div>
     <div role="main" id="content" class="ui-content">
         <p>Status: Signator authentication failed (validation code entered does not match that in our database)</p>
+    </div>
+    <div data-role="footer" data-position="fixed" style="position:absolute"><h1>&nbsp;</h1><a data-transition="slide" data-direction="reverse" class="ui-btn ui-corner-all ui-btn-inline ui-mini footer-button-left ui-btn-icon-left ui-icon-carat-l" href="#home">Back</a></div>
+</div>
+
+<!-- This is the landing page for unsupported Production use of browser. -->
+<div data-role="page" id="unsupported">
+    <div data-role="header"><h1>Unsupported Production Use of Browser</h1></div>
+    <div role="main" id="content" class="ui-content">
+        <p>Status: Two-factor authentication requires a phone as part of the security.  Using a browser is not a supported configuration for Production.</p>
     </div>
     <div data-role="footer" data-position="fixed" style="position:absolute"><h1>&nbsp;</h1><a data-transition="slide" data-direction="reverse" class="ui-btn ui-corner-all ui-btn-inline ui-mini footer-button-left ui-btn-icon-left ui-icon-carat-l" href="#home">Back</a></div>
 </div>
@@ -164,6 +174,8 @@ function onDeviceReady() {
                 '<input name="cellPhone" type="tel" size="12" maxlength="12">' +
                 '<label for="email">Email</label>' +
                 '<input name="email" type="email" size="28" maxlength="40">' +
+                '<label for="signatorPin">PIN</label>' +
+                '<input name="signatorPin" type="tel" size="4" maxlength="4">' +
                 '<label for="code">Validation Code</label>' +
                 '<input name="code" type="text" size="6" maxlength="6">' +
                 '<input type="submit" value="Validate"><p/><p/><hr/>' +
@@ -171,8 +183,14 @@ function onDeviceReady() {
                 '<input name="uuid" readonly type="text" id="uuid" value="' + strUUID + '" style="background:#f0f0f0;">' +
                 '</form>';
             $('#contentUnauthorized').html(strHTML);
-            Hide($('#homeNavWaiting'));  $('#homeUserParagraph').html('UUID: ' + strUUID);  Show($('#homeNavUnauthorized'));
-            Redirect('#unauthorized_uuid');
+            if (jsonData.unsupported == "true") {
+              // Unsupported use of browser in a Production environment
+              Hide($('#homeNavWaiting'));  $('#homeUserParagraph').html('UUID: ' + strUUID);  Show($('#homeNavUnsupported'));
+              Redirect('#unsupported');
+            } else {
+              Hide($('#homeNavWaiting'));  $('#homeUserParagraph').html('UUID: ' + strUUID);  Show($('#homeNavUnauthorized'));
+              Redirect('#unauthorized_uuid');
+            }
         }
     }).fail(function(XMLHttpRequest, textStatus, e) {
         // Do nothing on fail()

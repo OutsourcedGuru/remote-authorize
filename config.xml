@@ -1,5 +1,5 @@
 <widget xmlns="http://www.w3.org/ns/widgets" xmlns:gap="http://phonegap.com/ns/1.0"
-  id="guru.outsourced.remote-authorize" version="1.0.3">
+  id="guru.outsourced.remote-authorize" version="1.0.4">
   <name>remote-authorize</name>
   <description>An Adobe PhoneGap app with two-factor authorization of checks for QuickBooks Bill Pay.</description>
   <author href="http://github.myJS.io" email="support@outsourced.guru">Outsourced Guru support</author>
