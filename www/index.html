@@ -31,9 +31,9 @@
          Upon success with getJSON() in the JavaScript below the visibility of the
          two footers changes, allowing forward-progress navigation. -->
     <div id="homeNavWaiting" data-role="footer" style="visibility: show;" data-position="fixed" style="position:absolute"><h1>Waiting for server...</h1></div>
-    <div id="homeNavRequests" data-role="footer" style="visibility: hidden;" data-position="fixed" style="position:absolute"><h1>&nbsp;</h1><a data-transition="slide" class="ui-btn ui-corner-all ui-btn-inline ui-mini footer-button-right ui-btn-icon-right ui-icon-carat-r" href="#requests">Next</a></div>
-    <div id="homeNavUnauthorized" data-role="footer" style="visibility: hidden;" data-position="fixed" style="position:absolute"><h1>&nbsp;</h1><a data-transition="slide" class="ui-btn ui-corner-all ui-btn-inline ui-mini footer-button-right ui-btn-icon-right ui-icon-carat-r" href="#unauthorized_uuid">Next</a></div>
-    <div id="homeNavUnsupported" data-role="footer" style="visibility: hidden;" data-position="fixed" style="position:absolute"><h1>&nbsp;</h1><a data-transition="slide" class="ui-btn ui-corner-all ui-btn-inline ui-mini footer-button-right ui-btn-icon-right ui-icon-carat-r" href="#unsupported">Next</a></div>
+    <div id="homeNavRequests" data-role="footer" style="visibility: hidden;" data-position="fixed" style="position:absolute"><h1>&nbsp;</h1><a data-transition="slide" class="ui-btn ui-corner-all ui-btn-inline ui-mini footer-button-left ui-btn-icon-left ui-icon-check" nohref>UUID</a><a data-transition="slide" class="ui-btn ui-corner-all ui-btn-inline ui-mini footer-button-right ui-btn-icon-right ui-icon-carat-r" href="#requests">Next</a></div>
+    <div id="homeNavUnauthorized" data-role="footer" style="visibility: hidden;" data-position="fixed" style="position:absolute"><h1>&nbsp;</h1><a data-transition="slide" class="ui-btn ui-corner-all ui-btn-inline ui-mini footer-button-left ui-btn-icon-left ui-icon-alert" nohref>UUID</a><a data-transition="slide" class="ui-btn ui-corner-all ui-btn-inline ui-mini footer-button-right ui-btn-icon-right ui-icon-carat-r" href="#unauthorized_uuid">Next</a></div>
+    <div id="homeNavUnsupported" data-role="footer" style="visibility: hidden;" data-position="fixed" style="position:absolute"><h1>&nbsp;</h1><a data-transition="slide" class="ui-btn ui-corner-all ui-btn-inline ui-mini footer-button-left ui-btn-icon-left ui-icon-forbidden" nohref>Browser</a><a data-transition="slide" class="ui-btn ui-corner-all ui-btn-inline ui-mini footer-button-right ui-btn-icon-right ui-icon-carat-r" href="#unsupported">Next</a></div>
 </div>
 
 <!-- This is the landing page for the invalid PIN submitted. -->
@@ -60,7 +60,7 @@
     <div role="main" id="content" class="ui-content">
         <p>Status: Two-factor authentication requires a phone as part of the security.  Using a browser is not a supported configuration for Production.</p>
     </div>
-    <div data-role="footer" data-position="fixed" style="position:absolute"><h1>&nbsp;</h1><a data-transition="slide" data-direction="reverse" class="ui-btn ui-corner-all ui-btn-inline ui-mini footer-button-left ui-btn-icon-left ui-icon-carat-l" href="#home">Back</a></div>
+    <div data-role="footer" data-position="fixed" style="position:absolute"><h1>&nbsp;</h1><a data-transition="slide" data-direction="reverse" class="ui-btn ui-corner-all ui-btn-inline ui-mini footer-button-left ui-btn-icon-left ui-icon-carat-l" href="#home">Back</a><a data-transition="slide" class="ui-btn ui-corner-all ui-btn-inline ui-mini footer-button-right ui-btn-icon-right ui-icon-forbidden" nohref>Browser</a></div>
 </div>
 
 <!-- This is the landing page for the unseen UUID. -->
@@ -118,7 +118,7 @@ function onDeviceReady() {
         // Do nothing at this level but wait for the response
     }).done(function(jsonData) {
         if (jsonData.status == 'uuid_found') {
-            $('#homeStatusParagraph').html('[Signators] lookup status: Success');
+            $('#homeStatusParagraph').html('');
             $('#list').append('<li role="list-divider">Active Requests</li>');
             // We now have what is likely a good-looking JSON response to parse
             for (var i in jsonData.requests) {
@@ -160,7 +160,7 @@ function onDeviceReady() {
             Redirect('#requests', 3000);
         } else {
             // if (jsonData.status == 'uuid_found')
-            $('#homeStatusParagraph').html('[Signators] lookup status: Fail');
+            $('#homeStatusParagraph').html('');
             $('#list').append('<li role="list-divider">No Signator Found</li>');
             // Update the #unauthorized_uuid page with a form
             strHTML =
@@ -185,16 +185,16 @@ function onDeviceReady() {
             $('#contentUnauthorized').html(strHTML);
             if (jsonData.unsupported == "true") {
               // Unsupported use of browser in a Production environment
-              Hide($('#homeNavWaiting'));  $('#homeUserParagraph').html('UUID: ' + strUUID);  Show($('#homeNavUnsupported'));
+              Hide($('#homeNavWaiting'));  $('#homeUserParagraph').html('Unsupported non-phone usage');  Show($('#homeNavUnsupported'));
               Redirect('#unsupported');
             } else {
-              Hide($('#homeNavWaiting'));  $('#homeUserParagraph').html('UUID: ' + strUUID);  Show($('#homeNavUnauthorized'));
+              Hide($('#homeNavWaiting'));  $('#homeUserParagraph').html('Unrecognized phone UUID: ' + strUUID);  Show($('#homeNavUnauthorized'));
               Redirect('#unauthorized_uuid');
             }
         }
     }).fail(function(XMLHttpRequest, textStatus, e) {
         // Do nothing on fail()
-        $('#homeStatusParagraph').html('Lookup failed, status=[' + textStatus + '], error=[' + e + ']');
+        $('#homeStatusParagraph').html('First-factor failed, status=[' + textStatus + '], error=[' + e + ']');
     }).always(function(jsonData) {
         // Do nothing here
     });
