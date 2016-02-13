@@ -42,7 +42,7 @@
     <div role="main" id="content" class="ui-content">
         <p>Status: Two-factor authentication failed (your PIN does not match that in our database)</p>
     </div>
-    <div data-role="footer" data-position="fixed" style="position:absolute"><h1>&nbsp;</h1><a data-transition="slide" data-direction="reverse" class="ui-btn ui-corner-all ui-btn-inline ui-mini footer-button-left ui-btn-icon-left ui-icon-carat-l" href="#home">Back</a></div>
+    <div data-role="footer" data-position="fixed" style="position:absolute"><h1>&nbsp;</h1><a data-transition="slide" data-direction="reverse" class="ui-btn ui-corner-all ui-btn-inline ui-mini footer-button-left ui-btn-icon-left ui-icon-carat-l" href="#home">Back</a><a data-transition="slide" class="ui-btn ui-corner-all ui-btn-inline ui-mini footer-button-right ui-btn-icon-right ui-icon-alert" nohref>PIN</a></div>
 </div>
 
 <!-- This is the landing page for the invalid validation code submitted. -->
@@ -65,9 +65,9 @@
 
 <!-- This is the landing page for the unseen UUID. -->
 <div data-role="page" id="unauthorized_uuid">
-    <div data-role="header"><h1>Unknown Phone In Use</h1></div>
+    <div data-role="header"><h1>Unauthorized Phone In Use</h1></div>
     <div role="main" id="contentUnauthorized" class="ui-content"></div>
-    <div data-role="footer" data-position="fixed" style="position:absolute"><h1>&nbsp;</h1><a data-transition="slide" data-direction="reverse" class="ui-btn ui-corner-all ui-btn-inline ui-mini footer-button-left ui-btn-icon-left ui-icon-carat-l" href="#home">Back</a></div>
+    <div data-role="footer" data-position="fixed" style="position:absolute"><h1>&nbsp;</h1><a data-transition="slide" data-direction="reverse" class="ui-btn ui-corner-all ui-btn-inline ui-mini footer-button-left ui-btn-icon-left ui-icon-carat-l" href="#home">Back</a><a data-transition="slide" class="ui-btn ui-corner-all ui-btn-inline ui-mini footer-button-right ui-btn-icon-right ui-icon-alert" nohref>UUID</a></div>
 </div>
 
 <!-- This is the landing page for a successful authorization. -->
@@ -76,17 +76,16 @@
     <div role="main" id="content" class="ui-content">
         <p>Status: Two-factor authentication succeeded (your PIN matches that in our database)</p>
     </div>
-    <div data-role="footer" data-position="fixed" style="position:absolute"><h1>&nbsp;</h1><a data-transition="slide" data-direction="reverse" class="ui-btn ui-corner-all ui-btn-inline ui-mini footer-button-left ui-btn-icon-left ui-icon-carat-l" href="#home">Back</a></div>
+    <div data-role="footer" data-position="fixed" style="position:absolute"><h1>&nbsp;</h1><a data-transition="slide" data-direction="reverse" class="ui-btn ui-corner-all ui-btn-inline ui-mini footer-button-left ui-btn-icon-left ui-icon-carat-l" href="#home">Back</a><a data-transition="slide" class="ui-btn ui-corner-all ui-btn-inline ui-mini footer-button-right ui-btn-icon-right ui-icon-check" nohref>PIN</a></div>
 </div>
 
 <!-- This is the landing page for the Requests lookup.  It will be appended to within the
      JavaScript code below upon success of getJSON(). -->
 <div data-role="page" id="requests">
-    <div data-role="header"><h1>Requests</h1></div>
+    <div data-role="header"><h1>Check-Signing Requests</h1></div>
     <div role="main" id="content" class="ui-content">
-        <p>Status: First-factor approval achieved (your phone's ID matches that in our database)</p>
         <ul data-role="listview" id="list" data-inset="true" data-filter="true" data-filter-placeholder="Search results..." data-divider-theme="a"></ul></div>
-    <div data-role="footer" data-position="fixed" style="position:absolute"><h1>&nbsp;</h1><a data-transition="slide" data-direction="reverse" class="ui-btn ui-corner-all ui-btn-inline ui-mini footer-button-left ui-btn-icon-left ui-icon-carat-l" href="#home">Back</a></div>
+    <div data-role="footer" data-position="fixed" style="position:absolute"><h1>&nbsp;</h1><a data-transition="slide" data-direction="reverse" class="ui-btn ui-corner-all ui-btn-inline ui-mini footer-button-left ui-btn-icon-left ui-icon-carat-l" href="#home">Back</a><div id="buttonActiveRequestsUUID" style="visibility: hidden;"><a data-transition="slide" class="ui-btn ui-corner-all ui-btn-inline ui-mini footer-button-right ui-btn-icon-right ui-icon-check" nohref>UUID</a></div></div>
 </div>
 
 <script type="text/javascript">
@@ -156,7 +155,7 @@ function onDeviceReady() {
                 $('#list').append('<li><a data-transition="slide" href="#c_' + jsonData.requests[i].id + '">' + jsonData.requests[i].date + ' &bull; $' + jsonData.requests[i].amount + ' -> ' + jsonData.requests[i].payee + '</a></li>');
             } // for (var i in jsonData.requests)
             // End of JSON parsing
-            Hide($('#homeNavWaiting'));  Show($('#homeNavRequests'));
+            Hide($('#homeNavWaiting'));  Show($('#homeNavRequests'));  Show($('#buttonActiveRequestsUUID'));
             Redirect('#requests', 3000);
         } else {
             // if (jsonData.status == 'uuid_found')
@@ -165,7 +164,6 @@ function onDeviceReady() {
             // Update the #unauthorized_uuid page with a form
             strHTML =
                 '<form action="' + strServer + '/client/signator/new/" method="post">' +
-                'Ask Accounts Payable to provide a validation code to use this system.<br/><br/>' +
                 '<input name="client" type="hidden" value="' + strClient + '">' +
                 '<input name="auth_uuid" type="hidden" value="' + strUUID + '">' +
                 '<label for="fullName">Full Name</label>' +
@@ -176,7 +174,7 @@ function onDeviceReady() {
                 '<input name="email" type="email" size="28" maxlength="40">' +
                 '<label for="signatorPin">PIN</label>' +
                 '<input name="signatorPin" type="tel" size="4" maxlength="4">' +
-                '<label for="code">Validation Code</label>' +
+                '<label for="code">Validation Code (Ask Accounts Payable for this code)</label>' +
                 '<input name="code" type="text" size="6" maxlength="6">' +
                 '<input type="submit" value="Validate"><p/><p/><hr/>' +
                 '<label for="uuid">Phone ID</label>' +
