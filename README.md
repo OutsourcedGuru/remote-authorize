@@ -89,3 +89,8 @@ I assume that you've installed the server already.  Here's the general ordering 
 5. Using your browser, visit `http://localhost:3000` to see what the smartphone screen looks like for a signator (someone authorized to sign checks)
 6. Optionally, use the PhoneGap app on your smartphone.  In this case you'll want to change the `strServer` address in `www/js/config.js` in the client code to the IP address of your server.  Direct the PhoneGap app to go to this address on port 3000. 
 The server will detect that the phone's `uuid` hasn't been seen yet and go through an authorization session. 
+
+|Donate||Cryptocurrency|
+|:-----:|---|:--------:|
+| ![eth-receive](https://user-images.githubusercontent.com/15971213/40564950-932d4d10-601f-11e8-90f0-459f8b32f01c.png) || ![btc-receive](https://user-images.githubusercontent.com/15971213/40564971-a2826002-601f-11e8-8d5e-eeb35ab53300.png) |
+|Ethereum||Bitcoin|
